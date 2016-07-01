@@ -3,7 +3,7 @@
 ####EditText的撤销和恢复撤销操作
 #####使用
 * 引入库
-	* 待上传
+	* compile 'ren.qinc.edit:lib:0.0.2'
 * 初始化
 
 ```java
@@ -27,5 +27,4 @@
 * 演示图
 
 	![Image](image/image.gif)
-
 
