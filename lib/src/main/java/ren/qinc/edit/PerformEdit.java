@@ -133,8 +133,8 @@ public class PerformEdit {
             int end = start + count;
             if (end > start && end <= s.length()) {
                 CharSequence charSequence = s.subSequence(start, end);
+                //发生文字变化
                 if (charSequence.length() > 0) {
-                    Log.i("test", "beforeTextChanged:" + charSequence + " start" + start + " count" + count + " after" + after);
                     Action action = new Action(charSequence, start, false);
                     history.push(action);
                     historyBack.clear();
@@ -157,8 +157,8 @@ public class PerformEdit {
             int end = start + count;
             if (end > start) {
                 CharSequence charSequence = s.subSequence(start, end);
+                //发生文字变化
                 if (charSequence.length() > 0) {
-                    Log.i("test", "onTextChanged:" + charSequence + " start" + start + " before" + before + " count" + count);
                     Action action = new Action(charSequence, start, true);
                     history.push(action);
                     historyBack.clear();
