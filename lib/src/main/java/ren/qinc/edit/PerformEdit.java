@@ -174,6 +174,7 @@ public class PerformEdit {
 
         @Override
         public final void afterTextChanged(Editable s) {
+            if (flag) return;
             if (s != editable) {
                 editable = s;
                 onEditableChanged(s);

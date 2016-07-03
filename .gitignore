@@ -30,3 +30,4 @@ proguard/
 *.iws
 .idea/
 .metadata/
+.gradle/
