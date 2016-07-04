@@ -2,6 +2,7 @@ package ren.qinc.edit_demo;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -20,7 +21,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mEditText = ((EditText) findViewById(R.id.editText));
-        mPerformEdit = new PerformEdit(mEditText);
+        mPerformEdit = new PerformEdit(mEditText){
+            @Override
+            protected void onTextChanged(Editable s) {
+                //文本发生改变,可以是用户输入或者是EditText.setText触发.(setDefaultText的时候不会回调)
+                super.onTextChanged(s);
+            }
+        };
 
         mPerformEdit.setDefaultText("这是初始值,不能撤销的值");
     }

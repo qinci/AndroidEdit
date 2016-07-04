@@ -19,7 +19,6 @@ package ren.qinc.edit;
 import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.widget.EditText;
 
 import java.util.Stack;
@@ -35,7 +34,7 @@ public class PerformEdit {
     Stack<Action> historyBack = new Stack<>();
 
     private Editable editable;
-    //撤销和重做操作标志，防止撤销时候，重复操作
+    //自动操作标志，防止重复回调,导致无限撤销
     private boolean flag = false;
 
     public PerformEdit(@NonNull EditText editText) {
@@ -52,16 +51,6 @@ public class PerformEdit {
 
     }
 
-    /**
-     * 首次设置文本
-     * Set default text.
-     */
-    public final void setDefaultText(CharSequence text){
-        clearHistory();
-        flag = true;
-        editable.replace(0,editable.length(),text);
-        flag = false;
-    }
 
     /**
      * 清理记录
@@ -93,7 +82,7 @@ public class PerformEdit {
         //释放操作
         flag = false;
         //判断是否是下一个动作是否和本动作是同一个操作，直到不同为止
-        if (!history.empty() && history.peek().index == action.index){
+        if (!history.empty() && history.peek().index == action.index) {
             undo();
         }
     }
@@ -107,14 +96,28 @@ public class PerformEdit {
         flag = true;
         Action action = historyBack.pop();
         history.push(action);
-        if (action.isAdd)//恢复添加
+        if (action.isAdd) {
+            //恢复添加
             editable.insert(action.cursor, action.actionTarget);
-        else//恢复删除
+        } else {
+            //恢复删除
             editable.delete(action.cursor, action.cursor + action.actionTarget.length());
+        }
         flag = false;
         //判断是否是下一个动作是否和本动作是同一个操作
         if (!historyBack.empty() && historyBack.peek().index == action.index)
             redo();
+    }
+
+    /**
+     * 首次设置文本
+     * Set default text.
+     */
+    public final void setDefaultText(CharSequence text) {
+        clearHistory();
+        flag = true;
+        editable.replace(0, editable.length(), text);
+        flag = false;
     }
 
     private class Watcher implements TextWatcher {
@@ -206,7 +209,7 @@ public class PerformEdit {
     }
 
 
-    private static void CheckNull(Object o,String message) {
-        if(o == null)throw new IllegalStateException(message);
+    private static void CheckNull(Object o, String message) {
+        if (o == null) throw new IllegalStateException(message);
     }
 }
