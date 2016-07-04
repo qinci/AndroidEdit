@@ -1,4 +1,5 @@
 # AndroidEdit
+> 提取我正在做[Markdown编辑器](https://github.com/qinci/MarkdownEditors)的一个功能
 
 ####EditText的撤销和恢复撤销操作
 #####使用
