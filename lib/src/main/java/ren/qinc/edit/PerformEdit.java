@@ -19,6 +19,7 @@ package ren.qinc.edit;
 import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.EditText;
 
 import java.util.Stack;
@@ -30,16 +31,20 @@ import java.util.Stack;
 public class PerformEdit {
     //操作序号(一次编辑可能对应多个操作，如替换文字，就是删除+插入)
     int index;
+    //撤销栈
     Stack<Action> history = new Stack<>();
+    //恢复栈
     Stack<Action> historyBack = new Stack<>();
 
     private Editable editable;
+    private EditText editText;
     //自动操作标志，防止重复回调,导致无限撤销
     private boolean flag = false;
 
     public PerformEdit(@NonNull EditText editText) {
         CheckNull(editText, "EditText不能为空");
-        editable = editText.getText();
+        this.editable = editText.getText();
+        this.editText = editText;
         editText.addTextChangedListener(new Watcher());
     }
 
@@ -74,10 +79,12 @@ public class PerformEdit {
         historyBack.push(action);
         if (action.isAdd) {
             //撤销添加
-            editable.delete(action.cursor, action.cursor + action.actionTarget.length());
+            editable.delete(action.startCursor, action.startCursor + action.actionTarget.length());
+            editText.setSelection(action.startCursor, action.startCursor);
         } else {
             //插销删除
-            editable.insert(action.cursor, action.actionTarget);
+            editable.insert(action.startCursor, action.actionTarget);
+            editText.setSelection(action.startCursor, action.endCursor);
         }
         //释放操作
         flag = false;
@@ -98,10 +105,12 @@ public class PerformEdit {
         history.push(action);
         if (action.isAdd) {
             //恢复添加
-            editable.insert(action.cursor, action.actionTarget);
+            editable.insert(action.startCursor, action.actionTarget);
+            editText.setSelection(action.startCursor, action.endCursor);
         } else {
             //恢复删除
-            editable.delete(action.cursor, action.cursor + action.actionTarget.length());
+            editable.delete(action.startCursor, action.startCursor + action.actionTarget.length());
+            editText.setSelection(action.startCursor, action.startCursor);
         }
         flag = false;
         //判断是否是下一个动作是否和本动作是同一个操作
@@ -127,7 +136,7 @@ public class PerformEdit {
          *
          * @param s     the s
          * @param start the start 起始光标
-         * @param count the count 选择数量
+         * @param count the endCursor 选择数量
          * @param after the after 替换增加的文字数
          */
         @Override
@@ -136,9 +145,18 @@ public class PerformEdit {
             int end = start + count;
             if (end > start && end <= s.length()) {
                 CharSequence charSequence = s.subSequence(start, end);
-                //发生文字变化
+                //删除了文字
                 if (charSequence.length() > 0) {
                     Action action = new Action(charSequence, start, false);
+                    if (count > 1) {
+                        //如果一次超过一个字符，说名用户选择了，然后替换或者删除操作
+                        action.setSelectCount(count);
+                    }else if(count==1&&count==after){
+                        //一个字符替换
+                        action.setSelectCount(count);
+                    }
+                    //还有一种情况:选择一个字符,然后删除(暂时没有考虑这种情况)
+
                     history.push(action);
                     historyBack.clear();
                     action.setIndex(++index);
@@ -152,7 +170,7 @@ public class PerformEdit {
          * @param s      the s
          * @param start  the start 起始光标
          * @param before the before 选择数量
-         * @param count  the count 添加的数量
+         * @param count  the endCursor 添加的数量
          */
         @Override
         public final void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -160,9 +178,10 @@ public class PerformEdit {
             int end = start + count;
             if (end > start) {
                 CharSequence charSequence = s.subSequence(start, end);
-                //发生文字变化
+                //添加文字
                 if (charSequence.length() > 0) {
                     Action action = new Action(charSequence, start, true);
+
                     history.push(action);
                     historyBack.clear();
                     if (before > 0) {
@@ -191,16 +210,23 @@ public class PerformEdit {
         /** 改变字符. */
         CharSequence actionTarget;
         /** 光标位置. */
-        int cursor;
+        int startCursor;
+        int endCursor;
         /** 标志增加操作. */
         boolean isAdd;
         /** 操作序号. */
         int index;
 
-        public Action(CharSequence actionTag, int cursor, boolean add) {
+
+        public Action(CharSequence actionTag, int startCursor, boolean add) {
             this.actionTarget = actionTag;
-            this.cursor = cursor;
+            this.startCursor = startCursor;
+            this.endCursor = startCursor;
             this.isAdd = add;
+        }
+
+        public void setSelectCount(int count) {
+            this.endCursor = endCursor + count;
         }
 
         public void setIndex(int index) {
