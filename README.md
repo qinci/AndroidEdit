@@ -4,7 +4,7 @@
 ####EditText的撤销和恢复撤销操作
 #####使用
 * 引入库
-	* compile 'ren.qinc.edit:lib:0.0.3'
+	* compile 'ren.qinc.edit:lib:0.0.4'
 * 初始化
 
 ```java

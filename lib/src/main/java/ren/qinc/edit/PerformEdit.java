@@ -84,7 +84,11 @@ public class PerformEdit {
         } else {
             //插销删除
             editable.insert(action.startCursor, action.actionTarget);
-            editText.setSelection(action.startCursor, action.endCursor);
+            if (action.endCursor == action.startCursor) {
+                editText.setSelection(action.startCursor + action.actionTarget.length());
+            } else {
+                editText.setSelection(action.startCursor, action.endCursor);
+            }
         }
         //释放操作
         flag = false;
@@ -151,7 +155,7 @@ public class PerformEdit {
                     if (count > 1) {
                         //如果一次超过一个字符，说名用户选择了，然后替换或者删除操作
                         action.setSelectCount(count);
-                    }else if(count==1&&count==after){
+                    } else if (count == 1 && count == after) {
                         //一个字符替换
                         action.setSelectCount(count);
                     }
